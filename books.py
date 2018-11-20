@@ -90,8 +90,8 @@ def recommend_by_same_author(id):
 
 
 #print("RECOMMENDED BOOKS : ")
-print(recommend_by_same_group('10831'))
-print(recommend_by_same_author('10831'))
+print(recommend_by_same_group('2'))
+print(recommend_by_same_author('2'))
 
 
 
