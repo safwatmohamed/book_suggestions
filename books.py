@@ -15,13 +15,20 @@ def get_info(id):
     #----- Returns the location and age of a user given the id------
     info = []
     df = pd.DataFrame(data_users)
-    info.append(df.loc[id-1].Location.split(", ")[2])
-    info.append(df.loc[id-1].Age)
-    return info
+    col_name = df.columns[0]
+    df = df.rename(columns={col_name: 'USER'})
+    df = data_users.loc[data_users['User-ID'].isin([id])]
+    try:
+        info.append(df.Location.values[0].split(", ")[2])
+        info.append(df.Age.values[0])
+        return info
+    except IndexError:
+        return info
 
 def recommend_by_same_group(id):
     #------- Returns a recommended book based on what other users of same age and country read-----
     user_info = get_info(int(id))
+    if len(user_info) == 0 : return # cannot recommend a book by this method, if the user's country is not specified
     user_country = user_info[0]
     user_age = user_info[1]
     if math.isnan(user_age): user_age = 35 # if i don't have the info of the age of the user, i will assume it is 35(Avg age of the pop. of the world)
@@ -29,16 +36,15 @@ def recommend_by_same_group(id):
     #------- matching the user with another user having same nationality and somehow similar age --------------
     for  row in df_users.values:
         try:
-            if list(row)[1].split(", ")[2] == user_country:
+            if list(row)[1].split(", ")[2] == user_country: #checking for users having same nationality
                 if math.isnan(list(row)[2]):continue
-                if list(row)[2]-5 < user_age < list(row)[2]+5 :
+                if list(row)[2]-5 < user_age < list(row)[2]+5 : # checking if the are from the same generation
                     rec_user_id = list(row)[0]
                     books = books_read(rec_user_id) # returning the books read by the matched user
                     return books[0][0] # returning a the highest rated book among the books read by the matched user
 
         except IndexError :
             continue
-
 
 #------------returning a list of books read by a certain user given his ID ----------
 
@@ -63,7 +69,10 @@ def recommend_by_same_author(id):
     #-------getting the books read by the user---------
     book_read = books_read(id)
     #-------getting the highest rated book in the sorted dict-------------
-    isbn = book_read[0][0]
+    try:
+        isbn = book_read[0][0]
+    except IndexError: #This is the case where the user haven't read any books yet
+        return
     df_books = pd.DataFrame(data_books)
     col_name = df_books.columns[2]
     df_books = df_books.rename(columns={col_name: 'AUTHOR'})
@@ -80,9 +89,10 @@ def recommend_by_same_author(id):
 
 
 
-print("RECOMMENDED BOOKS : ")
-print(recommend_by_same_group('14'))
-print(recommend_by_same_author('14'))
+#print("RECOMMENDED BOOKS : ")
+print(recommend_by_same_group('10831'))
+print(recommend_by_same_author('10831'))
+
 
 
 
